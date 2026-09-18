@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>PDF 간편 편집기</title>
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f7fb;color:#182033;font-family:Arial,"Malgun Gothic",sans-serif}
+.wrap{max-width:1180px;margin:34px auto;padding:0 18px}.hero,.panel{background:#fff;border:1px solid #e5e9f2;border-radius:18px;box-shadow:0 8px 30px rgba(20,35,70,.06)}
+.hero{padding:30px}.hero h1{margin:0 0 8px;font-size:30px}.hero p{margin:0;color:#667085;line-height:1.7}
+.drop{margin-top:22px;border:2px dashed #aeb9ce;border-radius:16px;padding:34px;text-align:center;cursor:pointer;background:#fafcff}
+.drop.drag{border-color:#4f6df5;background:#f1f4ff}.drop strong{font-size:18px}.drop small{display:block;margin-top:8px;color:#7b8495}
+.btn{border:0;border-radius:10px;padding:11px 16px;font-weight:700;cursor:pointer;background:#eef2ff;color:#3347a9}
+.btn.primary{background:#3457e5;color:white}.btn.danger{background:#fff0f0;color:#b42318}.btn:disabled{opacity:.45;cursor:not-allowed}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0}.panel{padding:18px}.meta{display:flex;gap:18px;flex-wrap:wrap;color:#667085;font-size:14px;margin-bottom:12px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.card{border:2px solid transparent;border-radius:14px;background:#f8fafc;padding:8px;cursor:pointer;position:relative;user-select:none}
+.card.selected{border-color:#3457e5;background:#eef2ff}.card.dragging{opacity:.35}.thumb{background:white;border:1px solid #e5e7eb;border-radius:8px;min-height:170px;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.thumb canvas{max-width:100%;height:auto;display:block}.label{font-size:12px;margin-top:7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.num{position:absolute;top:13px;left:13px;background:#111827;color:#fff;border-radius:999px;font-size:11px;padding:4px 7px}
+.actions{display:flex;gap:5px;margin-top:7px}.mini{flex:1;border:0;border-radius:7px;padding:6px;cursor:pointer;background:white;border:1px solid #dde2ea}
+.empty{text-align:center;color:#8a94a6;padding:55px 10px}.privacy{margin-top:16px;padding:14px 16px;border-radius:12px;background:#eefbf4;color:#17663a;font-size:14px}
+.help{margin-top:14px;color:#667085;font-size:13px;line-height:1.65}.range{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:12px 0}.range input{min-width:240px;flex:1;padding:11px;border:1px solid #d7dce5;border-radius:9px}
+#status{font-size:13px;color:#3457e5;margin-left:auto;align-self:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <section class="hero">
+    <h1>PDF 간편 편집기</h1>
+    <p>PDF 합치기 · 나누기 · 페이지 순서 변경 · 삭제 · 회전 · 선택 페이지만 저장/인쇄</p>
+    <div id="drop" class="drop">
+      <strong>PDF 파일을 여기에 드래그하세요</strong>
+      <small>여러 PDF를 한 번에 선택할 수 있습니다.</small>
+      <p><button class="btn primary" id="pickBtn">PDF 선택</button></p>
+      <input id="fileInput" type="file" accept="application/pdf,.pdf" multiple hidden>
+    </div>
+    <div class="privacy">🔒 선택한 PDF는 별도 서버에 업로드하지 않습니다. PDF 처리는 현재 브라우저 안에서 수행됩니다.</div>
+  </section>
+
+  <div class="toolbar">
+    <button class="btn" id="addBtn">+ PDF 추가</button>
+    <button class="btn" id="allBtn">전체 선택</button>
+    <button class="btn" id="clearSelBtn">선택 해제</button>
+    <button class="btn" id="rotateBtn">↻ 선택 회전</button>
+    <button class="btn danger" id="deleteBtn">선택 삭제</button>
+    <button class="btn" id="extractBtn">선택 PDF 저장</button>
+    <button class="btn" id="printBtn">선택 인쇄</button>
+    <button class="btn primary" id="saveBtn">편집된 PDF 다운로드</button>
+    <span id="status"></span>
+  </div>
+
+  <section class="panel">
+    <div class="meta"><span id="pageCount">0페이지</span><span>페이지를 드래그하여 순서를 바꿀 수 있습니다.</span></div>
+    <div class="range">
+      <input id="rangeInput" placeholder="페이지 선택 예: 1,3,5,8-12">
+      <button class="btn" id="rangeSelectBtn">범위 선택</button>
+      <button class="btn" id="rangeSaveBtn">범위 PDF 저장</button>
+      <button class="btn" id="rangePrintBtn">범위 인쇄</button>
+    </div>
+    <div id="grid" class="grid"><div class="empty">PDF를 추가하면 페이지 미리보기가 여기에 표시됩니다.</div></div>
+    <div class="help">
+      • 페이지 클릭: 선택/해제 &nbsp; • Ctrl 없이도 여러 페이지 선택 가능 &nbsp; • 드래그: 순서 변경<br>
+      • “1,3,5,8-12” 형식으로 원하는 페이지만 선택하거나 저장/인쇄할 수 있습니다.<br>
+      • 비밀번호가 설정된 PDF나 일부 특수 PDF는 브라우저에서 처리되지 않을 수 있습니다.
+    </div>
+  </section>
+</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const { PDFDocument, degrees } = PDFLib;
+let pages=[], selected=new Set(), seq=0;
+const $=id=>document.getElementById(id);
+const setStatus=t=>$('status').textContent=t;
+
+$('pickBtn').onclick=e=>{e.stopPropagation();$('fileInput').click()};
+$('addBtn').onclick=()=>$('fileInput').click();
+$('drop').onclick=e=>{if(e.target.id!=='pickBtn')$('fileInput').click()};
+$('fileInput').onchange=async e=>{await addFiles([...e.target.files]); e.target.value=''};
+['dragenter','dragover'].forEach(x=>$('drop').addEventListener(x,e=>{e.preventDefault();$('drop').classList.add('drag')}));
+['dragleave','drop'].forEach(x=>$('drop').addEventListener(x,e=>{e.preventDefault();$('drop').classList.remove('drag')}));
+$('drop').addEventListener('drop',async e=>await addFiles([...e.dataTransfer.files].filter(f=>f.type==='application/pdf'||f.name.toLowerCase().endsWith('.pdf'))));
+
+async function addFiles(files){
+ if(!files.length)return;
+ try{
+  setStatus('PDF 읽는 중...');
+  for(const file of files){
+    const bytes=new Uint8Array(await file.arrayBuffer());
+    const src=await PDFDocument.load(bytes,{ignoreEncryption:false});
+    const pdfjs=await pdfjsLib.getDocument({data:bytes.slice()}).promise;
+    for(let i=0;i<src.getPageCount();i++){
+      const p=src.getPage(i), rot=p.getRotation().angle||0;
+      pages.push({id:++seq,fileName:file.name,bytes,pageIndex:i,rotation:rot,pdfjs});
+    }
+  }
+  await render(); setStatus('완료');
+ }catch(err){console.error(err);alert('PDF를 읽지 못했습니다. 비밀번호 보호 여부 또는 파일 상태를 확인해주세요.');setStatus('오류')}
+}
+
+async function render(){
+ $('pageCount').textContent=`${pages.length}페이지`;
+ if(!pages.length){$('grid').innerHTML='<div class="empty">PDF를 추가하면 페이지 미리보기가 여기에 표시됩니다.</div>';return}
+ $('grid').innerHTML='';
+ for(let idx=0;idx<pages.length;idx++){
+   const item=pages[idx], card=document.createElement('div');
+   card.className='card'+(selected.has(item.id)?' selected':''); card.draggable=true; card.dataset.id=item.id;
+   card.innerHTML=`<span class="num">${idx+1}</span><div class="thumb"></div><div class="label" title="${esc(item.fileName)}">${esc(item.fileName)} · 원본 ${item.pageIndex+1}p</div>
+   <div class="actions"><button class="mini rot">↻ 회전</button><button class="mini del">삭제</button></div>`;
+   $('grid').appendChild(card);
+   card.onclick=e=>{if(e.target.closest('button'))return; toggle(item.id);};
+   card.querySelector('.rot').onclick=()=>{item.rotation=(item.rotation+90)%360;render()};
+   card.querySelector('.del').onclick=()=>{pages=pages.filter(x=>x.id!==item.id);selected.delete(item.id);render()};
+   card.ondragstart=()=>{card.classList.add('dragging');window._dragId=item.id};
+   card.ondragend=()=>card.classList.remove('dragging');
+   card.ondragover=e=>e.preventDefault();
+   card.ondrop=e=>{e.preventDefault();movePage(window._dragId,item.id)};
+   renderThumb(item,card.querySelector('.thumb'));
+ }
+}
+function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function toggle(id){selected.has(id)?selected.delete(id):selected.add(id);render()}
+function movePage(from,to){if(from===to)return;let a=pages.findIndex(x=>x.id==from),b=pages.findIndex(x=>x.id==to);if(a<0||b<0)return;let [x]=pages.splice(a,1);b=pages.findIndex(y=>y.id==to);pages.splice(b,0,x);render()}
+async function renderThumb(item,box){
+ try{
+   const pg=await item.pdfjs.getPage(item.pageIndex+1), base=pg.getViewport({scale:1,rotation:item.rotation});
+   const scale=Math.min(1.25,135/base.width), vp=pg.getViewport({scale,rotation:item.rotation});
+   const c=document.createElement('canvas');c.width=vp.width;c.height=vp.height;box.innerHTML='';box.appendChild(c);
+   await pg.render({canvasContext:c.getContext('2d'),viewport:vp}).promise;
+ }catch(e){box.textContent='미리보기 오류'}
+}
+function parseRange(text){
+ const out=new Set();
+ text.split(',').map(x=>x.trim()).filter(Boolean).forEach(part=>{
+   if(part.includes('-')){let [a,b]=part.split('-').map(Number);if(Number.isFinite(a)&&Number.isFinite(b)){if(a>b)[a,b]=[b,a];for(let n=a;n<=b;n++)if(n>=1&&n<=pages.length)out.add(n-1)}}
+   else{let n=Number(part);if(Number.isFinite(n)&&n>=1&&n<=pages.length)out.add(n-1)}
+ });
+ return [...out].sort((a,b)=>a-b);
+}
+function selectedIndexes(){return pages.map((p,i)=>selected.has(p.id)?i:-1).filter(i=>i>=0)}
+async function buildPdf(indexes){
+ if(!indexes.length)throw new Error('페이지 없음');
+ const out=await PDFDocument.create();
+ for(const idx of indexes){
+   const it=pages[idx], src=await PDFDocument.load(it.bytes);
+   const [cp]=await out.copyPages(src,[it.pageIndex]);
+   cp.setRotation(degrees(it.rotation));
+   out.addPage(cp);
+ }
+ return await out.save();
+}
+function download(bytes,name){
+ const blob=new Blob([bytes],{type:'application/pdf'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),2000)
+}
+async function saveIndexes(ix,name){
+ if(!ix.length)return alert('페이지를 선택해주세요.');
+ try{setStatus('PDF 만드는 중...');download(await buildPdf(ix),name);setStatus('완료')}catch(e){console.error(e);alert('PDF 생성 중 오류가 발생했습니다.');setStatus('오류')}
+}
+async function printIndexes(ix){
+ if(!ix.length)return alert('인쇄할 페이지를 선택해주세요.');
+ try{
+   setStatus('인쇄용 PDF 만드는 중...');
+   const bytes=await buildPdf(ix), blob=new Blob([bytes],{type:'application/pdf'}),u=URL.createObjectURL(blob);
+   const w=window.open(u,'_blank'); if(!w){URL.revokeObjectURL(u);alert('팝업이 차단되었습니다. 팝업을 허용해주세요.');return}
+   setStatus('새 창에서 PDF가 열렸습니다. 브라우저의 인쇄 버튼을 눌러주세요.');
+   setTimeout(()=>URL.revokeObjectURL(u),120000);
+ }catch(e){console.error(e);alert('인쇄용 PDF 생성 중 오류가 발생했습니다.');setStatus('오류')}
+}
+$('allBtn').onclick=()=>{pages.forEach(p=>selected.add(p.id));render()};
+$('clearSelBtn').onclick=()=>{selected.clear();render()};
+$('rotateBtn').onclick=()=>{if(!selected.size)return alert('페이지를 선택해주세요.');pages.forEach(p=>{if(selected.has(p.id))p.rotation=(p.rotation+90)%360});render()};
+$('deleteBtn').onclick=()=>{if(!selected.size)return alert('페이지를 선택해주세요.');if(confirm(`선택한 ${selected.size}페이지를 삭제할까요?`)){pages=pages.filter(p=>!selected.has(p.id));selected.clear();render()}};
+$('extractBtn').onclick=()=>saveIndexes(selectedIndexes(),'선택페이지.pdf');
+$('printBtn').onclick=()=>printIndexes(selectedIndexes());
+$('saveBtn').onclick=()=>saveIndexes(pages.map((_,i)=>i),'편집된_PDF.pdf');
+$('rangeSelectBtn').onclick=()=>{let ix=parseRange($('rangeInput').value);selected.clear();ix.forEach(i=>selected.add(pages[i].id));render()};
+$('rangeSaveBtn').onclick=()=>saveIndexes(parseRange($('rangeInput').value),'선택범위.pdf');
+$('rangePrintBtn').onclick=()=>printIndexes(parseRange($('rangeInput').value));
+</script>
+</body>
+</html>
