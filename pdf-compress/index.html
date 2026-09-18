@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>PDF 용량 줄이기 | 무료 PDF 압축</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI",
+                 "Noto Sans KR", Arial, sans-serif;
+    background: #f5f7fb;
+    color: #111827;
+}
+
+.page {
+    max-width: 820px;
+    margin: 0 auto;
+    padding: 55px 20px 80px;
+}
+
+.header {
+    margin-bottom: 25px;
+}
+
+.badge {
+    display: inline-block;
+    padding: 7px 11px;
+    border-radius: 8px;
+    background: #edf1ff;
+    color: #465ee8;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 1px;
+}
+
+h1 {
+    margin: 15px 0 7px;
+    font-size: 34px;
+    letter-spacing: -1px;
+}
+
+.subtitle {
+    margin: 0;
+    color: #687386;
+    line-height: 1.7;
+}
+
+.card {
+    margin-top: 24px;
+    padding: 28px;
+    border: 1px solid #e3e7ef;
+    border-radius: 18px;
+    background: white;
+    box-shadow: 0 12px 35px rgba(30, 50, 100, .06);
+}
+
+.drop-zone {
+    border: 2px dashed #abb7d5;
+    border-radius: 16px;
+    padding: 48px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.drop-zone:hover,
+.drop-zone.dragover {
+    background: #f6f8ff;
+    border-color: #5065e8;
+}
+
+.drop-title {
+    font-size: 19px;
+    font-weight: 800;
+    margin-bottom: 8px;
+}
+
+.drop-desc {
+    font-size: 14px;
+    color: #8993a6;
+}
+
+button {
+    border: 0;
+    border-radius: 9px;
+    padding: 11px 17px;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.primary {
+    background: #4e5ee8;
+    color: white;
+}
+
+.primary:hover {
+    background: #3e4fd4;
+}
+
+.primary:disabled {
+    background: #aeb5d7;
+    cursor: not-allowed;
+}
+
+.select-button {
+    margin-top: 18px;
+}
+
+.privacy {
+    margin-top: 17px;
+    padding: 14px 16px;
+    border-radius: 11px;
+    background: #effaf3;
+    color: #376e4d;
+    font-size: 13px;
+    line-height: 1.6;
+}
+
+.file-box {
+    display: none;
+    margin-top: 20px;
+    padding: 18px;
+    border-radius: 12px;
+    background: #f7f8fc;
+}
+
+.file-name {
+    font-weight: 800;
+    word-break: break-all;
+}
+
+.file-size {
+    margin-top: 5px;
+    font-size: 13px;
+    color: #7b8494;
+}
+
+.settings {
+    display: none;
+    margin-top: 22px;
+}
+
+.settings-title {
+    font-weight: 800;
+    margin-bottom: 12px;
+}
+
+.levels {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.level {
+    padding: 16px 8px;
+    border: 1px solid #dfe3ed;
+    background: white;
+    color: #394150;
+}
+
+.level.active {
+    border: 2px solid #4e5ee8;
+    background: #f0f2ff;
+    color: #3447d4;
+}
+
+.level strong {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.level span {
+    display: block;
+    font-size: 11px;
+    color: #8a92a1;
+    font-weight: 400;
+}
+
+.action {
+    display: none;
+    margin-top: 20px;
+}
+
+.action button {
+    width: 100%;
+    padding: 15px;
+    font-size: 16px;
+}
+
+.progress-area {
+    display: none;
+    margin-top: 23px;
+}
+
+.progress-track {
+    width: 100%;
+    height: 11px;
+    background: #e7eaf1;
+    border-radius: 20px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: #4e5ee8;
+    transition: width .2s;
+}
+
+.progress-text {
+    margin-top: 9px;
+    text-align: center;
+    color: #697386;
+    font-size: 13px;
+}
+
+.result {
+    display: none;
+    margin-top: 25px;
+    padding: 23px;
+    border-radius: 15px;
+    background: #f2f5ff;
+    text-align: center;
+}
+
+.result h2 {
+    margin: 0 0 18px;
+    font-size: 21px;
+}
+
+.stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.stat {
+    background: white;
+    border-radius: 11px;
+    padding: 15px 8px;
+}
+
+.stat-label {
+    color: #8790a1;
+    font-size: 12px;
+}
+
+.stat-value {
+    margin-top: 6px;
+    font-size: 18px;
+    font-weight: 800;
+}
+
+.saved {
+    color: #2b8b57;
+}
+
+.download {
+    width: 100%;
+    padding: 14px;
+}
+
+.warning {
+    margin-top: 17px;
+    color: #8991a0;
+    font-size: 12px;
+    line-height: 1.6;
+}
+
+.error {
+    display: none;
+    margin-top: 18px;
+    padding: 14px;
+    background: #fff0f0;
+    color: #b23a3a;
+    border-radius: 10px;
+    font-size: 13px;
+}
+
+@media(max-width:600px) {
+
+    .page {
+        padding-top: 30px;
+    }
+
+    h1 {
+        font-size: 27px;
+    }
+
+    .card {
+        padding: 18px;
+    }
+
+    .levels {
+        grid-template-columns: 1fr;
+    }
+
+    .stats {
+        grid-template-columns: 1fr;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="page">
+
+    <div class="header">
+        <span class="badge">FREE WORK TOOLS</span>
+
+        <h1>PDF 용량 줄이기</h1>
+
+        <p class="subtitle">
+            PDF 파일을 브라우저에서 바로 압축하세요.<br>
+            별도의 프로그램 설치나 회원가입이 필요하지 않습니다.
+        </p>
+    </div>
+
+    <div class="card">
+
+        <div id="dropZone" class="drop-zone">
+
+            <div class="drop-title">
+                PDF 파일을 여기에 드래그하세요
+            </div>
+
+            <div class="drop-desc">
+                또는 아래 버튼을 눌러 PDF를 선택하세요.
+            </div>
+
+            <button class="primary select-button" id="selectButton">
+                PDF 선택
+            </button>
+
+            <input
+                type="file"
+                id="fileInput"
+                accept="application/pdf,.pdf"
+                hidden
+            >
+
+        </div>
+
+        <div class="privacy">
+            🔒 선택한 PDF는 서버에 업로드하지 않습니다.
+            압축 작업은 현재 사용 중인 브라우저 안에서 처리됩니다.
+        </div>
+
+        <div id="fileBox" class="file-box">
+            <div id="fileName" class="file-name"></div>
+            <div id="fileSize" class="file-size"></div>
+        </div>
+
+        <div id="settings" class="settings">
+
+            <div class="settings-title">
+                압축 강도를 선택하세요
+            </div>
+
+            <div class="levels">
+
+                <button class="level" data-level="low">
+                    <strong>약하게</strong>
+                    <span>화질 우선</span>
+                </button>
+
+                <button class="level active" data-level="medium">
+                    <strong>보통</strong>
+                    <span>추천</span>
+                </button>
+
+                <button class="level" data-level="high">
+                    <strong>강하게</strong>
+                    <span>용량 우선</span>
+                </button>
+
+            </div>
+
+        </div>
+
+        <div id="action" class="action">
+            <button id="compressButton" class="primary">
+                PDF 압축 시작
+            </button>
+        </div>
+
+        <div id="progressArea" class="progress-area">
+
+            <div class="progress-track">
+                <div id="progressBar" class="progress-bar"></div>
+            </div>
+
+            <div id="progressText" class="progress-text">
+                준비 중...
+            </div>
+
+        </div>
+
+        <div id="errorBox" class="error"></div>
+
+        <div id="result" class="result">
+
+            <h2>✓ PDF 압축 완료</h2>
+
+            <div class="stats">
+
+                <div class="stat">
+                    <div class="stat-label">원본</div>
+                    <div id="originalSize" class="stat-value"></div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-label">압축 후</div>
+                    <div id="compressedSize" class="stat-value"></div>
+                </div>
+
+                <div class="stat">
+                    <div class="stat-label">감소율</div>
+                    <div id="savedPercent"
+                         class="stat-value saved"></div>
+                </div>
+
+            </div>
+
+            <button id="downloadButton"
+                    class="primary download">
+                압축된 PDF 다운로드
+            </button>
+
+            <div class="warning">
+                ※ 압축을 위해 각 PDF 페이지를 이미지로 다시 구성합니다.
+                따라서 텍스트 선택, 검색, 링크 등의 기능이 사라질 수 있습니다.
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!--
+  PDF.js 3.11.174
+  Apache License 2.0
+-->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+
+<!--
+  pdf-lib 1.17.1
+  MIT License
+-->
+<script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+
+
+<script>
+
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+    "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+
+const fileInput =
+    document.getElementById("fileInput");
+
+const selectButton =
+    document.getElementById("selectButton");
+
+const dropZone =
+    document.getElementById("dropZone");
+
+const fileBox =
+    document.getElementById("fileBox");
+
+const fileName =
+    document.getElementById("fileName");
+
+const fileSize =
+    document.getElementById("fileSize");
+
+const settings =
+    document.getElementById("settings");
+
+const action =
+    document.getElementById("action");
+
+const compressButton =
+    document.getElementById("compressButton");
+
+const progressArea =
+    document.getElementById("progressArea");
+
+const progressBar =
+    document.getElementById("progressBar");
+
+const progressText =
+    document.getElementById("progressText");
+
+const result =
+    document.getElementById("result");
+
+const errorBox =
+    document.getElementById("errorBox");
+
+const originalSize =
+    document.getElementById("originalSize");
+
+const compressedSize =
+    document.getElementById("compressedSize");
+
+const savedPercent =
+    document.getElementById("savedPercent");
+
+const downloadButton =
+    document.getElementById("downloadButton");
+
+
+let selectedFile = null;
+let compressedBlob = null;
+
+let compressionLevel = "medium";
+
+
+const LEVELS = {
+
+    low: {
+        scale: 1.7,
+        quality: 0.86
+    },
+
+    medium: {
+        scale: 1.35,
+        quality: 0.72
+    },
+
+    high: {
+        scale: 1.05,
+        quality: 0.55
+    }
+
+};
+
+
+selectButton.addEventListener("click", function(e) {
+
+    e.stopPropagation();
+    fileInput.click();
+
+});
+
+
+dropZone.addEventListener("click", function() {
+
+    fileInput.click();
+
+});
+
+
+fileInput.addEventListener("change", function() {
+
+    if (fileInput.files.length > 0) {
+        loadFile(fileInput.files[0]);
+    }
+
+});
+
+
+dropZone.addEventListener("dragover", function(e) {
+
+    e.preventDefault();
+    dropZone.classList.add("dragover");
+
+});
+
+
+dropZone.addEventListener("dragleave", function() {
+
+    dropZone.classList.remove("dragover");
+
+});
+
+
+dropZone.addEventListener("drop", function(e) {
+
+    e.preventDefault();
+
+    dropZone.classList.remove("dragover");
+
+    if (e.dataTransfer.files.length > 0) {
+        loadFile(e.dataTransfer.files[0]);
+    }
+
+});
+
+
+document.querySelectorAll(".level")
+.forEach(function(button) {
+
+    button.addEventListener("click", function() {
+
+        document.querySelectorAll(".level")
+        .forEach(function(b) {
+            b.classList.remove("active");
+        });
+
+        button.classList.add("active");
+
+        compressionLevel =
+            button.dataset.level;
+
+    });
+
+});
+
+
+function loadFile(file) {
+
+    hideError();
+
+    if (
+        file.type !== "application/pdf" &&
+        !file.name.toLowerCase().endsWith(".pdf")
+    ) {
+
+        showError("PDF 파일만 선택할 수 있습니다.");
+        return;
+
+    }
+
+    selectedFile = file;
+    compressedBlob = null;
+
+    fileName.textContent = file.name;
+
+    fileSize.textContent =
+        "원본 용량 : " + formatBytes(file.size);
+
+    fileBox.style.display = "block";
+    settings.style.display = "block";
+    action.style.display = "block";
+
+    result.style.display = "none";
+    progressArea.style.display = "none";
+
+}
+
+
+compressButton.addEventListener(
+    "click",
+    compressPDF
+);
+
+
+async function compressPDF() {
+
+    if (!selectedFile) {
+        return;
+    }
+
+    try {
+
+        hideError();
+
+        compressButton.disabled = true;
+
+        progressArea.style.display = "block";
+        result.style.display = "none";
+
+        progressBar.style.width = "0%";
+
+        progressText.textContent =
+            "PDF를 읽는 중...";
+
+
+        const sourceBytes =
+            new Uint8Array(
+                await selectedFile.arrayBuffer()
+            );
+
+
+        const loadingTask =
+            pdfjsLib.getDocument({
+                data: sourceBytes
+            });
+
+
+        const sourcePdf =
+            await loadingTask.promise;
+
+
+        const {
+            PDFDocument
+        } = PDFLib;
+
+
+        const outputPdf =
+            await PDFDocument.create();
+
+
+        const option =
+            LEVELS[compressionLevel];
+
+
+        for (
+            let pageNumber = 1;
+            pageNumber <= sourcePdf.numPages;
+            pageNumber++
+        ) {
+
+            const percentage =
+                Math.round(
+                    ((pageNumber - 1) /
+                    sourcePdf.numPages) * 90
+                );
+
+
+            progressBar.style.width =
+                percentage + "%";
+
+
+            progressText.textContent =
+                pageNumber +
+                " / " +
+                sourcePdf.numPages +
+                " 페이지 압축 중...";
+
+
+            const page =
+                await sourcePdf.getPage(
+                    pageNumber
+                );
+
+
+            /*
+              PDF 포인트 기준 원래 페이지 크기
+            */
+            const originalViewport =
+                page.getViewport({
+                    scale: 1
+                });
+
+
+            /*
+              렌더링 해상도
+            */
+            const renderViewport =
+                page.getViewport({
+                    scale: option.scale
+                });
+
+
+            const canvas =
+                document.createElement(
+                    "canvas"
+                );
+
+
+            const context =
+                canvas.getContext(
+                    "2d",
+                    {
+                        alpha: false
+                    }
+                );
+
+
+            canvas.width =
+                Math.ceil(
+                    renderViewport.width
+                );
+
+            canvas.height =
+                Math.ceil(
+                    renderViewport.height
+                );
+
+
+            /*
+              JPEG 배경을 흰색으로 지정
+            */
+            context.fillStyle = "#ffffff";
+
+            context.fillRect(
+                0,
+                0,
+                canvas.width,
+                canvas.height
+            );
+
+
+            await page.render({
+
+                canvasContext: context,
+
+                viewport: renderViewport,
+
+                background: "rgb(255,255,255)"
+
+            }).promise;
+
+
+            const jpegBlob =
+                await canvasToBlob(
+                    canvas,
+                    "image/jpeg",
+                    option.quality
+                );
+
+
+            const jpegBytes =
+                new Uint8Array(
+                    await jpegBlob.arrayBuffer()
+                );
+
+
+            const jpegImage =
+                await outputPdf.embedJpg(
+                    jpegBytes
+                );
+
+
+            /*
+              새 PDF 페이지 크기는
+              원본 PDF와 동일하게 유지
+            */
+            const newPage =
+                outputPdf.addPage([
+                    originalViewport.width,
+                    originalViewport.height
+                ]);
+
+
+            newPage.drawImage(
+                jpegImage,
+                {
+                    x: 0,
+                    y: 0,
+                    width:
+                        originalViewport.width,
+                    height:
+                        originalViewport.height
+                }
+            );
+
+
+            /*
+              메모리 해제
+            */
+            canvas.width = 1;
+            canvas.height = 1;
+
+            page.cleanup();
+
+
+            /*
+              브라우저가 잠깐 UI를
+              업데이트할 시간을 줌
+            */
+            await sleep(10);
+
+        }
+
+
+        progressBar.style.width = "93%";
+
+        progressText.textContent =
+            "압축 PDF를 생성하는 중...";
+
+
+        const outputBytes =
+            await outputPdf.save({
+                useObjectStreams: true
+            });
+
+
+        compressedBlob =
+            new Blob(
+                [outputBytes],
+                {
+                    type: "application/pdf"
+                }
+            );
+
+
+        progressBar.style.width = "100%";
+
+        progressText.textContent =
+            "완료";
+
+
+        showResult(
+            selectedFile.size,
+            compressedBlob.size
+        );
+
+
+        try {
+            await sourcePdf.destroy();
+        }
+        catch(e) {}
+
+
+    }
+    catch(error) {
+
+        console.error(error);
+
+        showError(
+            "PDF 처리 중 오류가 발생했습니다. " +
+            "암호가 설정된 PDF이거나 브라우저에서 처리하기 어려운 PDF일 수 있습니다."
+        );
+
+    }
+    finally {
+
+        compressButton.disabled = false;
+
+    }
+
+}
+
+
+function showResult(
+    before,
+    after
+) {
+
+    originalSize.textContent =
+        formatBytes(before);
+
+    compressedSize.textContent =
+        formatBytes(after);
+
+
+    let percent =
+        (1 - after / before) * 100;
+
+
+    if (!isFinite(percent)) {
+        percent = 0;
+    }
+
+
+    if (percent >= 0) {
+
+        savedPercent.textContent =
+            percent.toFixed(1) + "%";
+
+    }
+    else {
+
+        savedPercent.textContent =
+            "용량 증가";
+
+    }
+
+
+    result.style.display =
+        "block";
+
+}
+
+
+downloadButton.addEventListener(
+    "click",
+    function() {
+
+        if (!compressedBlob) {
+            return;
+        }
+
+
+        const url =
+            URL.createObjectURL(
+                compressedBlob
+            );
+
+
+        const a =
+            document.createElement("a");
+
+
+        const originalName =
+            selectedFile.name.replace(
+                /\.pdf$/i,
+                ""
+            );
+
+
+        a.href = url;
+
+        a.download =
+            originalName +
+            "_compressed.pdf";
+
+
+        document.body.appendChild(a);
+
+        a.click();
+
+        a.remove();
+
+
+        setTimeout(function() {
+
+            URL.revokeObjectURL(url);
+
+        }, 1000);
+
+    }
+);
+
+
+function canvasToBlob(
+    canvas,
+    type,
+    quality
+) {
+
+    return new Promise(
+        function(resolve, reject) {
+
+            canvas.toBlob(
+                function(blob) {
+
+                    if (blob) {
+                        resolve(blob);
+                    }
+                    else {
+                        reject(
+                            new Error(
+                                "이미지 변환 실패"
+                            )
+                        );
+                    }
+
+                },
+                type,
+                quality
+            );
+
+        }
+    );
+
+}
+
+
+function formatBytes(bytes) {
+
+    if (bytes === 0) {
+        return "0 B";
+    }
+
+    const units = [
+        "B",
+        "KB",
+        "MB",
+        "GB"
+    ];
+
+    const index =
+        Math.floor(
+            Math.log(bytes) /
+            Math.log(1024)
+        );
+
+
+    return (
+        bytes /
+        Math.pow(1024, index)
+    ).toFixed(
+        index === 0 ? 0 : 2
+    ) +
+    " " +
+    units[index];
+
+}
+
+
+function showError(message) {
+
+    errorBox.textContent = message;
+    errorBox.style.display = "block";
+
+}
+
+
+function hideError() {
+
+    errorBox.style.display = "none";
+
+}
+
+
+function sleep(ms) {
+
+    return new Promise(
+        resolve =>
+            setTimeout(resolve, ms)
+    );
+
+}
+
+</script>
+
+</body>
+</html>
