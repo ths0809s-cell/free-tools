@@ -1,0 +1,14 @@
+Bundled third-party libraries
+
+PDF.js 3.11.174
+Project: https://github.com/mozilla/pdf.js
+License: Apache License 2.0
+
+pdf-lib 1.17.1
+Project: https://github.com/Hopding/pdf-lib
+License: MIT
+
+These files are vendored into this repository so the PDF tool can load
+its processing libraries from the same GitHub Pages origin at runtime.
+User-selected PDF files are processed by the browser-side application;
+this project does not implement a PDF upload endpoint.
