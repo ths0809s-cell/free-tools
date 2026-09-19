@@ -1,0 +1,55 @@
+name: Switch PDF compressor to local libraries
+
+on:
+  push:
+    paths:
+      - '.github/workflows/switch-pdf-libs-local.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  switch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Replace CDN references with local vendored libraries
+        shell: python
+        run: |
+          from pathlib import Path
+          p = Path('pdf-compress/index.html')
+          s = p.read_text(encoding='utf-8')
+          replacements = {
+              'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js': '../lib/pdf.min.js',
+              'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js': '../lib/pdf-lib.min.js',
+              'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js': '../lib/pdf.worker.min.js',
+          }
+          for old, new in replacements.items():
+              if old not in s:
+                  raise SystemExit(f'Expected reference not found: {old}')
+              s = s.replace(old, new)
+          p.write_text(s, encoding='utf-8')
+      - name: Verify no runtime CDN references remain
+        shell: bash
+        run: |
+          ! grep -q 'cdnjs.cloudflare.com/ajax/libs/pdf.js' pdf-compress/index.html
+          ! grep -q 'cdn.jsdelivr.net/npm/pdf-lib' pdf-compress/index.html
+          grep -q '../lib/pdf.min.js' pdf-compress/index.html
+          grep -q '../lib/pdf-lib.min.js' pdf-compress/index.html
+          grep -q '../lib/pdf.worker.min.js' pdf-compress/index.html
+          test -s lib/pdf.min.js
+          test -s lib/pdf-lib.min.js
+          test -s lib/pdf.worker.min.js
+      - name: Commit change
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add pdf-compress/index.html
+          if git diff --cached --quiet; then
+            echo 'No changes needed.'
+          else
+            git commit -m 'Use local PDF libraries at runtime'
+            git push
+          fi
