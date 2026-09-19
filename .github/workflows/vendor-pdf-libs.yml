@@ -1,0 +1,68 @@
+name: Vendor PDF libraries
+
+on:
+  push:
+    paths:
+      - '.github/workflows/vendor-pdf-libs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download pinned browser libraries
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p lib
+          curl --fail --location --retry 3 \
+            'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js' \
+            --output lib/pdf.min.js
+          curl --fail --location --retry 3 \
+            'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js' \
+            --output lib/pdf.worker.min.js
+          curl --fail --location --retry 3 \
+            'https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js' \
+            --output lib/pdf-lib.min.js
+          test -s lib/pdf.min.js
+          test -s lib/pdf.worker.min.js
+          test -s lib/pdf-lib.min.js
+
+      - name: Add license notice
+        shell: bash
+        run: |
+          cat > lib/THIRD_PARTY_LICENSES.txt <<'EOF'
+          Bundled third-party libraries
+
+          PDF.js 3.11.174
+          Project: https://github.com/mozilla/pdf.js
+          License: Apache License 2.0
+
+          pdf-lib 1.17.1
+          Project: https://github.com/Hopding/pdf-lib
+          License: MIT
+
+          These files are vendored into this repository so the PDF tool can load
+          its processing libraries from the same GitHub Pages origin at runtime.
+          User-selected PDF files are processed by the browser-side application;
+          this project does not implement a PDF upload endpoint.
+          EOF
+
+      - name: Commit vendored files
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add lib/
+          if git diff --cached --quiet; then
+            echo 'No changes to commit.'
+          else
+            git commit -m 'Vendor pinned PDF libraries'
+            git push
+          fi
